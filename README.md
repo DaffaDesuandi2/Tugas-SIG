@@ -46,13 +46,13 @@ Aplikasi akan berjalan di http://localhost:5173
 ## 📸 Screenshots Dokumentasi
 
 ### 1. Tampilan Utama (Public Mode)
-User hanya bisa melihat peta tanpa fitur edit.
+![alt text](./Screenshots/public.png)
 
 ### 2. Login Admin (JWT Auth)
-Proses autentikasi untuk mengakses fitur CRUD.
+![alt text](./Screenshots/login.png)
 
 ### 3. Fitur Admin (Edit Mode)
-Form tambah data dan tombol hapus muncul setelah login berhasil.
+![alt text](./Screenshots/admin.png)
 
 ### 4. Bukti API (Terminal)
-Log sukses HTTP 200 OK untuk operasional database.
+![alt text](./Screenshots/200.png)
