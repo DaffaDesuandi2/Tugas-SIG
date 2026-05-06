@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from decimal import Decimal
+from pipeline import run_yolo_gis_pipeline
 
 app = FastAPI(title="Tugas 9 - API Spasial ITERA")
 
@@ -220,3 +221,16 @@ def get_location_by_id(loc_id: int):
             raise HTTPException(status_code=404, detail="Lokasi tidak ditemukan")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/detect-satelite")
+def detect_satelite():
+    try:
+        # PENTING: Taruh contoh file gambar satelit (.tif) lu di folder backend
+        image_path = "citra.tif" 
+        output_geojson = "detection_result.geojson"
+        
+        # Jalankan pipeline AI
+        data = run_yolo_gis_pipeline(image_path, output_geojson)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal memproses gambar: {str(e)}")

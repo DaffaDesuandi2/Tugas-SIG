@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 function MapView() {
   const [geoData, setGeoData] = useState(null);
@@ -11,6 +12,24 @@ function MapView() {
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   // --- TAMBAHAN: State untuk cek status login ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 1. Tambahkan state baru di dalam fungsi MapView()
+  const [aiDetectionData, setAiDetectionData] = useState(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+
+// 2. Buat fungsi untuk menembak API YOLOv8
+  const handleAiDetection = async () => {
+    setLoadingAi(true); // Nyalakan loading animasi tombol
+    try {
+      alert("Memulai deteksi objek dengan YOLOv8, mohon tunggu...");
+      const res = await axios.get('http://127.0.0.1:8000/detect-satelite');
+      setAiDetectionData(res.data);
+      alert(`Sukses! Berhasil mendeteksi ${res.data.features.length} objek.`);
+    } catch (err) {
+      alert("Gagal menjalankan deteksi AI. Pastikan file citra satelit ada di backend dan server menyala.");
+    } finally {
+      setLoadingAi(false); // Matikan loading animasi tombol
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -114,6 +133,18 @@ function MapView() {
       </button>
 
       <h2 style={{ textAlign: 'center' }}>WebGIS Bandar Lampung - Tugas 9</h2>
+      <p style={{ textAlign: 'center', marginTop: '0', color: '#555' }}>Integrasi Deep Learning YOLOv8 & Sistem Informasi Geografis</p>
+
+      
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', gap: '15px' }}>
+        <button 
+          onClick={handleAiDetection} 
+          disabled={loadingAi}
+          style={{ background: '#007bff', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          {loadingAi ? "⏳ Sedikit Lagi Memproses AI..." : "🤖 Jalankan Pipeline YOLOv8"}
+        </button>
+      </div>
 
       {showLogin && (
         <div style={{
@@ -150,7 +181,7 @@ function MapView() {
         </form>
       ) : (
         <p style={{ textAlign: 'center', color: '#666' }}>Silakan login untuk menambah atau menghapus data.</p>
-      )}
+      )}  
 
       <MapContainer center={[-5.397, 105.266]} zoom={13} style={{ height: '70vh', width: '100%', borderRadius: '10px', border: '2px solid #ddd' }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -161,6 +192,18 @@ function MapView() {
             key={isLoggedIn ? 'admin-mode' : 'public-mode'} 
             data={geoData} 
             onEachFeature={onEachFeature} 
+          />
+        )}
+        {aiDetectionData && (
+          <GeoJSON 
+            data={aiDetectionData} 
+            pointToLayer={(feature, latlng) => {
+             
+              return L.circleMarker(latlng, { radius: 8, fillColor: "red", color: "#000", weight: 1, opacity: 1, fillOpacity: 0.8 });
+            }}
+            onEachFeature={(feature, layer) => {
+              layer.bindPopup(`<b>Objek AI:</b> ${feature.properties.class_name}<br/><b>Akurasi:</b> ${feature.properties.confidence * 100}%`);
+            }}
           />
         )}
       </MapContainer>
